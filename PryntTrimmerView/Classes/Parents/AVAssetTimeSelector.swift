@@ -44,6 +44,9 @@ public class AVAssetTimeSelector: UIView, UIScrollViewDelegate {
         assetPreview.translatesAutoresizingMaskIntoConstraints = false
         assetPreview.delegate = self
         addSubview(assetPreview)
+
+      let swipeLeft = UIPanGestureRecognizer(target: self, action: #selector(TrimmerView.respondToSwipeGesture(_:)))
+      assetPreview.addGestureRecognizer(swipeLeft)
     }
 
     func constrainAssetPreview() {

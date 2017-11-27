@@ -221,6 +221,36 @@ public protocol TrimmerViewDelegate: class {
     }
 
     // MARK: - Trim Gestures
+    @objc func respondToSwipeGesture(_ sender: UIPanGestureRecognizer) {
+      let point = sender.velocity(in: assetPreview.contentView)
+      let origin = sender.location(in: assetPreview.contentView)
+
+      switch sender.state {
+
+        case .changed:
+          if(origin.x >= leftHandleView.frame.origin.x && origin.x <= rightHandleView.frame.origin.x) {
+            if point.x > 0 {
+              // right
+              if((rightHandleView.frame.origin.x) <= assetPreview.contentView.frame.width + handleWidth) {
+                leftConstraint?.constant += 5
+                rightConstraint?.constant += 5
+              }
+            }else{
+              //left
+              if((leftHandleView.frame.origin.x) >= handleWidth) {
+                leftConstraint?.constant -= 5
+                rightConstraint?.constant -= 5
+              }
+            }
+          }
+          updateSelectedTime(stoppedMoving: false)
+
+        case .began, .cancelled, .ended, .failed:
+          updateSelectedTime(stoppedMoving: true)
+        default:
+          break
+      }
+   }
 
     @objc func handlePanGesture(_ gestureRecognizer: UIPanGestureRecognizer) {
         guard let view = gestureRecognizer.view, let superView = gestureRecognizer.view?.superview else { return }
@@ -257,13 +287,21 @@ public protocol TrimmerViewDelegate: class {
 
     private func updateLeftConstraint(with translation: CGPoint) {
         let maxConstraint = max(rightHandleView.frame.origin.x - handleWidth - minimumDistanceBetweenHandle, 0)
-        let newConstraint = min(max(0, currentLeftConstraint + translation.x), maxConstraint)
+        var newConstraint = min(max(0, currentLeftConstraint + translation.x), maxConstraint)
+
+        if(rightHandleView.frame.origin.x - handleWidth - newConstraint >= maximumDistanceBetweenHandle) {
+           newConstraint = max(rightHandleView.frame.origin.x - handleWidth - maximumDistanceBetweenHandle , 0)
+        }
         leftConstraint?.constant = newConstraint
     }
 
     private func updateRightConstraint(with translation: CGPoint) {
         let maxConstraint = min(2 * handleWidth - frame.width + leftHandleView.frame.origin.x + minimumDistanceBetweenHandle, 0)
-        let newConstraint = max(min(0, currentRightConstraint + translation.x), maxConstraint)
+        var newConstraint = max(min(0, currentRightConstraint + translation.x), maxConstraint)
+
+        if(((assetPreview.contentView.frame.width + newConstraint) - leftHandleView.frame.origin.x) > maximumDistanceBetweenHandle) {
+          newConstraint = min((leftHandleView.frame.origin.x + maximumDistanceBetweenHandle) - assetPreview.contentView.frame.width , 0)
+        }
         rightConstraint?.constant = newConstraint
     }
 
@@ -327,6 +365,13 @@ public protocol TrimmerViewDelegate: class {
         guard let asset = asset else { return 0 }
         return CGFloat(minDuration) * assetPreview.contentView.frame.width / CGFloat(asset.duration.seconds)
     }
+
+    private var maximumDistanceBetweenHandle: CGFloat {
+      guard let asset = asset else { return 0 }
+      return CGFloat(15) * assetPreview.contentView.frame.width / CGFloat(asset.duration.seconds)
+    }
+
+
 
     // MARK: - Scroll View Delegate
 

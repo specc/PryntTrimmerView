@@ -72,6 +72,7 @@ class VideoTrimmerViewController: AssetSelectionViewController {
     @objc func itemDidFinishPlaying(_ notification: Notification) {
         if let startTime = trimmerView.startTime {
             player?.seek(to: startTime)
+            player?.play()
         }
     }
 
@@ -117,6 +118,6 @@ extension VideoTrimmerViewController: TrimmerViewDelegate {
         player?.pause()
         player?.seek(to: playerTime, toleranceBefore: kCMTimeZero, toleranceAfter: kCMTimeZero)
         let duration = (trimmerView.endTime! - trimmerView.startTime!).seconds
-        print(duration)
+        //print(duration)
     }
 }

@@ -8,8 +8,12 @@
 
 import UIKit
 import Photos
+import MobileCoreServices
 
-class AssetSelectionViewController: UIViewController {
+class AssetSelectionViewController: UIViewController, UINavigationControllerDelegate {
+
+
+    public var videoLength = 0.0;
 
     var fetchResult: PHFetchResult<PHAsset>?
 
@@ -27,23 +31,55 @@ class AssetSelectionViewController: UIViewController {
     }
 
     func loadAssetRandomly() {
-        guard let fetchResult = fetchResult, fetchResult.count > 0 else {
-            print("Error loading assets.")
-            return
-        }
 
-        let randomAssetIndex = Int(arc4random_uniform(UInt32(fetchResult.count - 1)))
-        let asset = fetchResult.object(at: randomAssetIndex)
-        PHCachingImageManager().requestAVAsset(forVideo: asset, options: nil) { (avAsset, _, _) in
-            DispatchQueue.main.async {
-                if let avAsset = avAsset {
-                    self.loadAsset(avAsset)
-                }
-            }
-        }
+      let imagePickerController = UIImagePickerController()
+      imagePickerController.sourceType = .photoLibrary
+      imagePickerController.mediaTypes = [kUTTypeImage, kUTTypeMovie] as [String]
+      imagePickerController.videoQuality = .typeIFrame960x540
+      imagePickerController.videoMaximumDuration = TimeInterval(15.0)
+      imagePickerController.allowsEditing = false  // Hand the editing to an explicit Editor
+      imagePickerController.delegate = self
+      self.present(imagePickerController, animated: true, completion: nil)
+
+
     }
 
     func loadAsset(_ asset: AVAsset) {
         // override in subclass
     }
+}
+
+extension AssetSelectionViewController: UIImagePickerControllerDelegate {
+  public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]){
+
+    guard let mediaType = info[UIImagePickerControllerMediaType] as? String else {
+
+      return
+    }
+
+    picker.dismiss(animated:true, completion: nil)
+
+
+    switch mediaType {
+
+    case String(kUTTypeMovie):
+
+      guard let movieUrl = info[UIImagePickerControllerMediaURL] as? NSURL else {
+        return
+      }
+
+      guard let moviePath = movieUrl.relativePath else {
+        return
+      }
+
+      let avAsset = AVAsset(url: movieUrl as URL)
+      self.loadAsset(avAsset)
+      videoLength = avAsset.duration.seconds
+
+
+    default:
+      return
+    }
+
+  }
 }

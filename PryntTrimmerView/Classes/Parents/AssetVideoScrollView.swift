@@ -83,7 +83,7 @@ class AssetVideoScrollView: UIScrollView {
 
     private func setContentSize(for asset: AVAsset) -> CGSize {
 
-        let contentWidthFactor = CGFloat(max(1, asset.duration.seconds / maxDuration))
+        let contentWidthFactor = CGFloat(1) // CGFloat(max(1, asset.duration.seconds / maxDuration))
         widthConstraint?.isActive = false
         widthConstraint = contentView.widthAnchor.constraint(equalTo: widthAnchor, multiplier: contentWidthFactor)
         widthConstraint?.isActive = true
