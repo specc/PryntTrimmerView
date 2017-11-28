@@ -231,13 +231,13 @@ public protocol TrimmerViewDelegate: class {
           if(origin.x >= leftHandleView.frame.origin.x && origin.x <= rightHandleView.frame.origin.x) {
             if point.x > 0 {
               // right
-              if((rightHandleView.frame.origin.x) <= assetPreview.contentView.frame.width + handleWidth) {
+              if((rightHandleView.frame.origin.x) <= assetPreview.contentView.frame.width + handleWidth - 5) {
                 leftConstraint?.constant += 5
                 rightConstraint?.constant += 5
               }
             }else{
               //left
-              if((leftHandleView.frame.origin.x) >= handleWidth) {
+              if((leftHandleView.frame.origin.x) >= 5) {
                 leftConstraint?.constant -= 5
                 rightConstraint?.constant -= 5
               }
